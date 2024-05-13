@@ -25,6 +25,6 @@ jobs:
       - name: Pull image from Docker Hub
         run: docker pull ahmad6964/new_repo:latest
       - name: Delete Old Container
-        run: docker rm -f reactContainer || true # Add || true to prevent workflow failure if the container doesn't exist
+        run: docker rm -f reactContainer || true 
       - name: Run Docker container
         run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo
