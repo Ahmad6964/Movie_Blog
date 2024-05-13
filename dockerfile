@@ -1,20 +1,35 @@
-# pull official base image
-FROM node:18-alpine AS build-stage
+# # pull official base image
+# FROM node:18-alpine AS build-stage
 
-# set working directory
-WORKDIR /app
+# # set working directory
+# WORKDIR /app
 
 
-# install app dependencies
+# # install app dependencies
+# COPY package.json .
+# COPY package-lock.json ./
+# RUN npm install
+
+# COPY . .
+
+# EXPOSE 3000
+
+# # start app
+# CMD ["npm", "start"]
+
+
+# Step 1: Build React App
+FROM node:alpine3.18 as build
+WORKDIR /app 
 COPY package.json .
-COPY package-lock.json ./
 RUN npm install
-
 COPY . .
+RUN npm run build
 
-
-
-EXPOSE 3000
-
-# start app
-CMD ["npm", "start"]
+# Step 2: Server With Nginx
+FROM nginx:1.23-alpine
+WORKDIR /usr/share/nginx/html
+RUN rm -rf *
+COPY --from=build /app/build .
+EXPOSE 80
+ENTRYPOINT [ "nginx", "-g", "daemon off;" ]
