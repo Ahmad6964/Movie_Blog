@@ -12,19 +12,19 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v4
       - name: Login to Docker Hub
-        run: docker login -u ${{ ahmad6964 }} -p ${{ Randhawa$7955 }}
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
       - name: Build Docker Image
         run: docker build -t ahmad6964/new_repo .
-      - name: Publish image to docker hub
+      - name: Publish image to Docker Hub
         run: docker push ahmad6964/new_repo:latest   
 
   deploy: 
     needs: build
     runs-on: aws-ec2    
     steps:
-      - name: Pull image from docker hub
+      - name: Pull image from Docker Hub
         run: docker pull ahmad6964/new_repo:latest
       - name: Delete Old Container
-        run: docker rm -f reactContainer
-      - name: Run docker container
-        run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
+        run: docker rm -f reactContainer || true # Add || true to prevent workflow failure if the container doesn't exist
+      - name: Run Docker container
+        run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo
