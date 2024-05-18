@@ -2,7 +2,7 @@ import React from 'react'
 
 const PageNotFound = () => {
   return (
-    <div>Page Not Foud</div>
+    <div>Page is Not Foud</div>
   )
 }
 
