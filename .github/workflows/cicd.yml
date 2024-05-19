@@ -29,6 +29,57 @@
 #       - name: Run docker container
 #         run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
 
+# name: CICD
+
+# on:
+#   push:
+#     branches:
+#       - master
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout Source
+#         uses: actions/checkout@v3
+      
+#       - name: Login to Docker Hub
+#         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+      
+#       - name: Build Docker Image
+#         run: docker build -t ahmad6964/new_repo .
+      
+#       - name: Publish image to docker hub
+#         run: docker push ahmad6964/new_repo:latest
+
+#   deploy: 
+#     needs: build
+#     runs-on: self-hosted
+#     steps:
+#       - name: Check Docker Version
+#         run: docker --version
+      
+#       - name: Check Network Connectivity
+#         run: ping -c 4 google.com
+
+#       - name: Login to Docker Hub
+#         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+#       - name: Pull image from docker hub
+#         run: docker pull ahmad6964/new_repo:latest
+      
+#       - name: List Docker Images
+#         run: docker images
+
+#       - name: Delete Old Container
+#         run: |
+#           if [ "$(docker ps -q -f name=reactContainer)" ]; then
+#             docker rm -f reactContainer
+#           fi
+      
+#       - name: Run docker container
+#         run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo
+
 name: CICD
 
 on:
@@ -43,27 +94,36 @@ jobs:
       - name: Checkout Source
         uses: actions/checkout@v3
       
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
       - name: Login to Docker Hub
-        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
       
       - name: Build Docker Image
         run: docker build -t ahmad6964/new_repo .
       
-      - name: Publish image to docker hub
+      - name: Publish Image to Docker Hub
         run: docker push ahmad6964/new_repo:latest
 
-  deploy: 
+  deploy:
     needs: build
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
-      - name: Pull image from docker hub
-        run: docker pull ahmad6964/new_repo:latest
+      - name: Setup SSH Key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.EC2_KEY }}
       
-      - name: Delete Old Container
+      - name: Copy Docker Compose File to EC2
         run: |
-          if [ "$(docker ps -q -f name=reactContainer)" ]; then
-            docker rm -f reactContainer
-          fi
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ./docker-compose.yml ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:~/docker-compose.yml
       
-      - name: Run docker container
-        run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo
+      - name: Deploy to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            docker login -u "${{ secrets.DOCKER_USERNAME }}" -p "${{ secrets.DOCKER_PASSWORD }}"
+            docker pull ahmad6964/new_repo:latest
+            docker rm -f reactContainer || true
+            docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo:latest
+          EOF
