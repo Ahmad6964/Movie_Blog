@@ -18,15 +18,28 @@ jobs:
       - name: Publish image to docker hub
         run: docker push ahmad6964/new_repo:latest   
 
+  # deploy: 
+  #   needs: build
+  #   runs-on: aws-ec2  
+  #   steps:
+  #     - name: Pull image from docker hub
+  #       run: docker pull ahmad6964/new_repo:latest
+  #     - name: Delete Old Container
+  #       run: docker rm -f reactContainer
+  #     - name: Run docker container
+  #       run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
   deploy: 
     needs: build
-    runs-on: aws-ec2  
+    runs-on: self-hosted,custom-label    
     steps:
       - name: Pull image from docker hub
         run: docker pull ahmad6964/new_repo:latest
       - name: Delete Old Container
-        run: docker rm -f reactContainer
+        run: |
+          if [ "$(docker ps -q -f name=reactContainer)" ]; then
+            docker rm -f reactContainer
+          fi
       - name: Run docker container
-        run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
+        run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo
 
 
