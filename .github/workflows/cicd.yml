@@ -20,7 +20,7 @@ jobs:
 
   deploy: 
     needs: build
-    runs-on: ip-172-31-32-58    
+    runs-on: aws-ec2  
     steps:
       - name: Pull image from docker hub
         run: docker pull ahmad6964/new_repo:latest
