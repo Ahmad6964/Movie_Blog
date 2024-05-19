@@ -16,18 +16,7 @@ jobs:
       - name: Build Docker Image
         run: docker build -t ahmad6964/new_repo .
       - name: Publish image to docker hub
-        run: docker push ahmad6964/new_repo:latest   
-
-  # deploy: 
-  #   needs: build
-  #   runs-on: aws-ec2  
-  #   steps:
-  #     - name: Pull image from docker hub
-  #       run: docker pull ahmad6964/new_repo:latest
-  #     - name: Delete Old Container
-  #       run: docker rm -f reactContainer
-  #     - name: Run docker container
-  #       run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
+        run: docker push ahmad6964/new_repo:latest     
   deploy: 
     needs: build
     runs-on: aws-ec2   
