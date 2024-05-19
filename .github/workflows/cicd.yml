@@ -30,7 +30,7 @@ jobs:
   #       run: docker run -d -p 3000:80 --name reactContainer ahmad6964/new_repo   
   deploy: 
     needs: build
-    runs-on: self-hosted,custom-label    
+    runs-on: aws-ec2   
     steps:
       - name: Pull image from docker hub
         run: docker pull ahmad6964/new_repo:latest
