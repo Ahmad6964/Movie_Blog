@@ -82,7 +82,7 @@ export default function PrimarySearchAppBar() {
                   to="/"
                   sx={{ textDecoration: "none", color: "white" }}
                >
-                  Movie App
+                  Movie App Ahmad Raza
                </Typography>
                <form onSubmit={submitHandler}>
                   <Search>
